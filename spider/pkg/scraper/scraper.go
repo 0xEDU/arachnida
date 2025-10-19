@@ -8,8 +8,8 @@ import (
 )
 
 type HtmlData struct {
-	links []string
-	images []string
+	Links []string
+	Images []string
 }
 
 func formatLink(link string, baseUrl string) string {

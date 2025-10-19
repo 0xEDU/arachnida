@@ -2,9 +2,11 @@ package crawler
 
 import (
 	"etachott/spider/pkg/options"
+	"etachott/spider/pkg/scraper"
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 )
 
 type stackUrl struct {
@@ -12,7 +14,7 @@ type stackUrl struct {
 	depth   int
 }
 
-func fetchData(url string) (string, error) {
+func fetchHtml(url string) (string, error) {
 	resp, err := http.Get(url)
 	if err != nil {
 		return "", err
@@ -28,11 +30,9 @@ func fetchData(url string) (string, error) {
 }
 
 func Crawl(opts *options.Options) {
-	// var maxDepth int
+	// maxDepth := 1
 	// if opts.UseRecursion {
 	// 	maxDepth = opts.RecursionDepth
-	// } else {
-	// 	maxDepth = 1
 	// }
 
 	urlQueue := make([]stackUrl, 0)
@@ -42,6 +42,22 @@ func Crawl(opts *options.Options) {
 		var currentUrl stackUrl
 		currentUrl, urlQueue = urlQueue[0], urlQueue[1:]
 
-		fmt.Println(fetchData(currentUrl.address))
+		htmlBytes, err := fetchHtml(currentUrl.address)
+		if err != nil {
+			continue
+		}
+
+		parsedUrl, err := url.Parse(currentUrl.address)
+		if err != nil {
+			continue
+		}
+
+		basePath := parsedUrl.Scheme + "://" + parsedUrl.Host
+		data, err := scraper.ExtractData(htmlBytes, basePath)
+		if err != nil {
+			continue
+		}
+
+		fmt.Println(data)
 	}
 }

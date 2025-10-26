@@ -8,12 +8,20 @@ import (
 )
 
 type HtmlData struct {
-	Links []string
+	Links  []string
 	Images []string
 }
 
+var allowedExtensions = map[string]bool{
+	".jpg":  true,
+	".jpeg": true,
+	".png":  true,
+	".gif":  true,
+	".bmp":  true,
+}
+
 func formatLink(link string, baseUrl string) string {
-	if (strings.HasPrefix(link, "http://") || strings.HasPrefix(link, "https://")) {
+	if strings.HasPrefix(link, "http://") || strings.HasPrefix(link, "https://") {
 		return link
 	} else if strings.HasPrefix(link, "/") {
 		return baseUrl + link
@@ -22,7 +30,7 @@ func formatLink(link string, baseUrl string) string {
 }
 
 func formatImageSource(src string, baseUrl string) string {
-	if (strings.HasPrefix(src, "http://") || strings.HasPrefix(src, "https://")) {
+	if strings.HasPrefix(src, "http://") || strings.HasPrefix(src, "https://") {
 		return src
 	} else if strings.HasPrefix(src, "/") {
 		return baseUrl + src
@@ -44,15 +52,24 @@ func ExtractData(htmlBytes string, baseUrl string) (HtmlData, error) {
 			switch n.DataAtom {
 			case atom.A:
 				for _, attr := range n.Attr {
-					if attr.Key == "href" {
-						links = append(links, formatLink(attr.Val, baseUrl))
+					if attr.Key != "href" {
+						continue
 					}
+					links = append(links, formatLink(attr.Val, baseUrl))
 				}
 			case atom.Img:
 				for _, attr := range n.Attr {
-					if attr.Key == "src" {
-						images = append(images, formatImageSource(attr.Val, baseUrl))
+					if attr.Key != "src" {
+						continue
 					}
+					if !strings.HasSuffix(attr.Val, ".jpg") &&
+						!strings.HasSuffix(attr.Val, ".jpeg") &&
+						!strings.HasSuffix(attr.Val, ".png") &&
+						!strings.HasSuffix(attr.Val, ".gif") &&
+						!strings.HasSuffix(attr.Val, ".bmp") {
+						continue
+					}
+					images = append(images, formatImageSource(attr.Val, baseUrl))
 				}
 			}
 		}

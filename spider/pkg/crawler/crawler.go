@@ -3,7 +3,6 @@ package crawler
 import (
 	"etachott/spider/pkg/options"
 	"etachott/spider/pkg/scraper"
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -33,6 +32,10 @@ func fetchHtml(url string) (string, error) {
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK {
+		return "", err
+	}
+
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
@@ -41,11 +44,13 @@ func fetchHtml(url string) (string, error) {
 	return string(body), nil
 }
 
-func Crawl(opts *options.Options) {
+func Crawl(opts *options.Options) []string {
 	maxDepth := 1
 	if opts.UseRecursion {
 		maxDepth = opts.RecursionDepth
 	}
+
+	imageList := make([]string, 0)
 
 	urlQueue := make([]stackUrl, 0)
 	urlQueue = append(urlQueue, newStackUrl(opts.Arguments[0], 0))
@@ -84,8 +89,13 @@ func Crawl(opts *options.Options) {
 			urlQueue = append(urlQueue, newStackUrl(link, currentUrl.depth+1))
 		}
 
+		for _, image := range data.Images {
+			imageList = append(imageList, image)
+		}
+
+
 		visitedSet[currentUrl.address] = struct{}{}
-		fmt.Println(data)
-		fmt.Printf("current depth = %d \n\n\n\n", currentUrl.depth)
 	}
+
+	return imageList
 }

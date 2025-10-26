@@ -10,7 +10,7 @@ type Options struct {
 	UseRecursion   bool
 	RecursionDepth int
 	DataPath       string
-	Arguments	   []string
+	Arguments      []string
 }
 
 func NewOptions() *Options {
@@ -30,7 +30,7 @@ func NewOptions() *Options {
 		os.Exit(1)
 	}
 
-	return &Options {
+	return &Options{
 		*flagUseRecursion,
 		*flagRecursionDepth,
 		*flagDataPath,

@@ -93,7 +93,6 @@ func Crawl(opts *options.Options) []string {
 			imageList = append(imageList, image)
 		}
 
-
 		visitedSet[currentUrl.address] = struct{}{}
 	}
 
